@@ -5,7 +5,7 @@
 // TODO: define your synchronization variables here
 // (hint: don't forget to initialize them)
 
-static pthread_mutex_t queue_mux = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t queue_mux = PTHREAD_MUTEX_INITIALIZER; // was thinking of multiplexers in EECE :p
 static pthread_cond_t queue_empty_cond = PTHREAD_MUTEX_INITIALIZER;
 
 // add a new request to the end of the queue
@@ -31,14 +31,31 @@ void enqueue(queue_t *q, req_t *t) {
     pthread_mutex_unlock(&queue_mux); // unlock the mutex after modifying it
 }
 
+
 // pope a request from the head of the queue.
 // if the queue is empty, the thread should wait.
 // NOTE: queue must be implemented as a monitor
 req_t* dequeue(queue_t *q) {
     /* TODO: your code here */
 
+    // locking the mutex before modifying queue
+    pthread_mutex_lock(&queue_mux);
 
-    return NULL;
+    while(q->head == NULL) { // until the queue is empty, we wait
+        pthread_cond_wait(&queue_empty_cond, &queue_mux);
+    }
+
+    req_t *t = q->head;
+    q->head = q->head->next;
+
+    if (q->head == NULL) { // if it's empty after dequeue
+        q->tail = NULL;
+    }
+
+    q->count++; // no. of requests - 1
+    pthread_mutex_unlock(&queue_mux); // unlock the mutex after modifying it
+
+    return t;
 }
 
 // return the number of requests in the queue.
@@ -46,6 +63,10 @@ req_t* dequeue(queue_t *q) {
 int queue_count(queue_t *q) {
     /* TODO: your code here */
 
+    // lock before accessing the count
+    pthread_mutex_lock(&queue_mux);
+    int count = q->count; // accesing + storing the count
+    pthread_mutex_unlock(&queue_mux); // lock
 
-    return 0;
+    return count;
 }
