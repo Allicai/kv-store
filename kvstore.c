@@ -5,7 +5,7 @@
 // TODO: define your synchronization variables here
 // (hint: don't forget to initialize them)
 
-
+static pthread_mutex_t kv_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /* read a key from the key-value store.
  *
@@ -18,9 +18,17 @@ int kv_read(kvstore_t *kv, char *key, int *val) {
     /* TODO: your code here */
 
 
-    // delete this later cuz printing is slow
-    printf("[INFO] read key[%s]\n", key);
-    return 0;
+    pthread_mutex_lock(&kv_mutex);
+    // Critical section
+    for (int i = 0; i < TABLE_MAX; ++i) {
+        if (kv->keys[i].stat == 1 && strcmp(kv->keys[i].key, key) == 0) {
+            *val = kv->values[i];
+            pthread_mutex_unlock(&kv_mutex);
+            return 0; // Key found, return success
+        }
+    }
+    pthread_mutex_unlock(&kv_mutex);
+    return 1; // Key not found, return failure
 }
 
 
@@ -42,9 +50,26 @@ int kv_read(kvstore_t *kv, char *key, int *val) {
 int kv_write(kvstore_t *kv, char *key, int val) {
     /* TODO: your code here */
 
-    // delete this later cuz printing is slow
-    printf("[INFO] write key[%s]=val[%d]\n", key, val);
-    return 0;
+    pthread_mutex_lock(&kv_mutex);
+    // Critical section
+    for (int i = 0; i < TABLE_MAX; ++i) {
+        if (kv->keys[i].stat == 1 && strcmp(kv->keys[i].key, key) == 0) {
+            kv->values[i] = val; // Update value
+            pthread_mutex_unlock(&kv_mutex);
+            return 0; // Key found, value updated, return success
+        }
+    }
+    for (int i = 0; i < TABLE_MAX; ++i) {
+        if (kv->keys[i].stat == 0) {
+            strcpy(kv->keys[i].key, key); // Insert new key
+            kv->values[i] = val; // Insert value
+            kv->keys[i].stat = 1; // Mark as used
+            pthread_mutex_unlock(&kv_mutex);
+            return 0; // Inserted new key-value pair, return success
+        }
+    }
+    pthread_mutex_unlock(&kv_mutex);
+    return 1; // Table full, return failure
 }
 
 
@@ -59,8 +84,16 @@ void kv_delete(kvstore_t *kv, char *key) {
     /* TODO: your code here */
 
 
-    // delete this later cuz printing is slow
-    printf("[INFO] delete key[%s]\n", key);
+    pthread_mutex_lock(&kv_mutex);
+    // Critical section
+    for (int i = 0; i < TABLE_MAX; ++i) {
+        if (kv->keys[i].stat == 1 && strcmp(kv->keys[i].key, key) == 0) {
+            kv->keys[i].stat = 0; // Mark as free
+            pthread_mutex_unlock(&kv_mutex);
+            return; // Key found and deleted, return
+        }
+    }
+    pthread_mutex_unlock(&kv_mutex);
 }
 
 
@@ -78,16 +111,39 @@ int kv_increase(kvstore_t *kv, char *key, int val) {
     /* TODO: your code here */
 
 
-    // delete this later cuz printing is slow
-    printf("[INFO] increase key[%s]+=val[%d]\n", key, val);
-    return 0;
+    pthread_mutex_lock(&kv_mutex);
+    // Critical section
+    for (int i = 0; i < TABLE_MAX; ++i) {
+        if (kv->keys[i].stat == 1 && strcmp(kv->keys[i].key, key) == 0) {
+            kv->values[i] += val; // Increase value
+            pthread_mutex_unlock(&kv_mutex);
+            return 0; // Key found, value increased, return success
+        }
+    }
+    for (int i = 0; i < TABLE_MAX; ++i) {
+        if (kv->keys[i].stat == 0) {
+            strcpy(kv->keys[i].key, key); // Insert new key
+            kv->values[i] = val; // Insert value
+            kv->keys[i].stat = 1; // Mark as used
+            pthread_mutex_unlock(&kv_mutex);
+            return 0; // Inserted new key-value pair, return success
+        }
+    }
+    pthread_mutex_unlock(&kv_mutex);
+    return 1; // Table full, return failure
 }
 
 // print kv-store's contents to stdout
 // note: use any format that you like; this is mostly for debugging purpose
 void kv_dump(kvstore_t *kv) {
     /* TODO: your code here */
-
-
-    printf("TODO: dump key-value store\n");
+    printf("=== kv-store ===\n");
+    pthread_mutex_lock(&kv_mutex);
+    // Critical section
+    for (int i = 0; i < TABLE_MAX; ++i) {
+        if (kv->keys[i].stat == 1) {
+            printf("[%d] %s: %d\n", i, kv->keys[i].key, kv->values[i]);
+        }
+    }
+    pthread_mutex_unlock(&kv_mutex);
 }

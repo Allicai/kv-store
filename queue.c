@@ -53,7 +53,7 @@ req_t* dequeue(queue_t *q) {
         q->tail = NULL;
     }
 
-    q->count++; // no. of requests - 1
+    q->count--; // no. of requests - 1
     pthread_mutex_unlock(&queue_mux); // unlock the mutex after modifying it
 
     return t;
