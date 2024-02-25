@@ -179,6 +179,14 @@ int main(int argc, char **argv)
 
     /* TODO: your code here */
 
+    pthread_t worker_threads[num_thread];
+    for (int i = 0; i < num_thread; ++i) {
+        if (pthread_create(&worker_threads[i], NULL, worker, (void*)&args) != 0) {
+            perror("pthread create");
+            exit(EXIT_FAILURE);
+        }
+    }
+
 
     // main thread: getting cmd from admin
     for (;;) {
@@ -205,6 +213,12 @@ int main(int argc, char **argv)
             //   - the dispatcher thread needs the argument "file" (defined above)
             //   - you should create one thread
             /* TODO: your code here */
+
+            pthread_t dispatcher_thread;
+            if (pthread_create(&dispatcher_thread, NULL, dispatcher, (void*)file) != 0) {
+                perror("pthread_create");
+                exit(EXIT_FAILURE);
+            }
 
         }
         else if (strcmp(cmd, "stats") == 0) {
