@@ -5,8 +5,9 @@
 // TODO: define your synchronization variables here
 // (hint: don't forget to initialize them)
 
-static pthread_mutex_t queue_mux = PTHREAD_MUTEX_INITIALIZER; // was thinking of multiplexers in EECE :p
-static pthread_cond_t queue_empty_cond = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t queue_mux = PTHREAD_MUTEX_INITIALIZER; 
+// was thinking of multiplexers in EECE :p
+static pthread_cond_t queue_empty_cond = PTHREAD_COND_INITIALIZER;
 
 // add a new request to the end of the queue
 // NOTE: queue must be implemented as a monitor
