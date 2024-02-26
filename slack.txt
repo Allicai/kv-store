@@ -1,5 +1,5 @@
-Name:
-NUID:
+Name: Vinit Patel
+NUID: 002181048
 slack hours used: 0
 remaining slack hours: 0
 Taking the challenge (optional): No
@@ -7,9 +7,11 @@ Taking the challenge (optional): No
 ---
 
 Collaborators (who you talked to about the lab, what you talked about):
-
+N/A
 
 Source material that you consulted:
 
 
 Other acknowledgments:
+Did some searching on how to use random in python in reference to generating the commands 
+for pressure.txt and large.txt
